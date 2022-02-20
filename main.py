@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import csv
 import re
 import requests
+from db import db_connect
 
 def wol_crawling():
     url = 'https://wol.jw.org/ko/wol/meetings/r8/lp-ko/2022/7'
@@ -74,6 +75,23 @@ def wol_crawling():
         section4_fourth = section4.select_one('li:nth-child(5) > #p20').get_text()
         if section4.select_one('li:nth-child(6) > #p21') is not None:
             section4_fifth = section4.select_one('li:nth-child(6) > #p21').get_text()
+
+        cursor, db = db_connect()
+
+        sql = """INSERT INTO meeting_schedule (
+            meeting_date, weekly_script, start_song, intro, speech_10, spiritual_gems_title, sg_q1, sg_q2,
+            bible_reading, section3_first, section3_second, section3_third, middle_song, section4_first,
+            section4_second, section4_third, section4_fourth, section4_fifth
+        ) VALUES (
+            '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}'
+        )""".format(
+            meeting_date, weekly_script, start_song, intro, speech_10, spiritual_gems_title, sg_q1, sg_q2,
+            bible_reading, section3_first, section3_second, section3_third, middle_song, section4_first,
+            section4_second, section4_third, section4_fourth, section4_fifth
+        )
+
+        cursor.execute(sql)
+        db.commit()
 
     else:
         print(response.status_code)
