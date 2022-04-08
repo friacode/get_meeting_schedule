@@ -19,8 +19,14 @@ def wol_crawling():
         if response.status_code == 200:
             bs = BeautifulSoup(html, 'html.parser')
 
+            # 최상위 부모 태그
+            mainTag = bs.select_one('div.todayItems')
+
+            # 평일집회 템플릿
+            week_template = mainTag.select_one('div.pub-')
+
             # 집회교제 템플릿
-            template = bs.select_one('div.itemData')
+            template = week_template.select_one('div.itemData')
 
             # header 부분
             header = template.select_one('header')
@@ -82,15 +88,27 @@ def wol_crawling():
             if section4.select_one('li:nth-child(6)') is not None:
                 section4_fifth = section4.select_one('li:nth-child(6)').get_text()
 
+            # 주말 집회 템플릿
+            weekly_template = mainTag.select_one('div.pub-w')
+
+            watchtower_tempalte = weekly_template.select_one('div.itemData')
+
+            # 파수대 연구기사 기간
+            watchtower_info = watchtower_tempalte.select_one('h3').get_text()
+
+            # 연구기사 주제
+            watchtower_title = watchtower_tempalte.select_one('p').get_text()
+
             sql = """INSERT INTO meeting_schedule (meeting_date, weekly_script, start_song, intro, speech_10,
             spiritual_gems_title, sg_q1, sg_q2, bible_reading, section3_first, section3_second, section3_third,
-            section3_fourth, middle_song, section4_first, section4_second, section4_third, section4_fourth, section4_fifth)
+            section3_fourth, middle_song, section4_first, section4_second, section4_third, section4_fourth, 
+            section4_fifth, watchtower_info, watchtower_title)
             VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}',
-            '{}', '{}', '{}')""".format(meeting_date, weekly_script, start_song, intro, speech_10, spiritual_gems_title,
-                                        sg_q1, sg_q2, bible_reading, section3_first, section3_second, section3_third,
-                                        section3_fourth, middle_song, section4_first, section4_second, section4_third,
-                                        section4_fourth, section4_fifth)
-
+            '{}', '{}', '{}', '{}', '{}')""".format(meeting_date, weekly_script, start_song, intro, speech_10,
+                                                    spiritual_gems_title, sg_q1, sg_q2, bible_reading, section3_first,
+                                                    section3_second, section3_third, section3_fourth, middle_song,
+                                                    section4_first, section4_second, section4_third, section4_fourth,
+                                                    section4_fifth, watchtower_info, watchtower_title)
             cursor.execute(sql)
             db.commit()
 
